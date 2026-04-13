@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: bonus
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bonus
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
