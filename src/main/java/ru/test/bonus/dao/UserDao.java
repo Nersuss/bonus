@@ -37,7 +37,6 @@ public class UserDao {
                         .addValue("email", email),
                 Boolean.class
         );
-
     }
 
     public Optional<User> findByEmail(String email) {
@@ -52,11 +51,11 @@ public class UserDao {
         ));
     }
 
-    public int registerUser(RegisterRqDto registerRqDto) {
+    public void registerUser(RegisterRqDto registerRqDto) {
         String sql = """
                 INSERT INTO public.users (email, password, balance, card_number) VALUES (:email, :password, :balance, :cardNumber);
                 """;
-        return jdbcTemplate.update(sql,
+        jdbcTemplate.update(sql,
                 new MapSqlParameterSource()
                         .addValue("email", registerRqDto.login())
                         .addValue("password", bCryptPasswordEncoder().encode(registerRqDto.password()))
@@ -65,69 +64,76 @@ public class UserDao {
         );
     }
 
-    public void addByCardNumber(AddRqDto addRqDto) {
+    public int addByCardNumber(AddRqDto addRqDto, int idUser) {
         String sql = """
-                UPDATE public.users SET balance = balance + :sum WHERE users.card_number = :cardNumber;
+                UPDATE public.users SET balance = balance + :sum WHERE users.card_number = :cardNumber AND :sum > 0 AND users.id = :cardNumber;
                 """;
-        jdbcTemplate.update(sql,
+        return jdbcTemplate.update(sql,
                 new MapSqlParameterSource()
                         .addValue("sum", addRqDto.sum())
                         .addValue("cardNumber", addRqDto.cardNumber())
+                        .addValue("cardNumber", idUser)
+        );
+    }
+
+    public int cancelByCardNumber(CancelRqDto cancelRqDto, int idUser) {
+        String sql = """
+                UPDATE public.users SET balance = balance - :sum WHERE users.card_number = :cardNumber AND :sum > 0 AND users.balance >= :sum AND users.id = :cardNumber;
+                """;
+        return jdbcTemplate.update(sql,
+                new MapSqlParameterSource()
+                        .addValue("sum", cancelRqDto.sum())
+                        .addValue("cardNumber", cancelRqDto.cardNumber())
+                        .addValue("cardNumber", idUser)
         );
     }
 
     public void insertOperation(int idUser, int sum) {
         String sql = """
-                INSERT INTO public.operations (id_user, sum, date) VALUES (:idUser, :sum, :date);
+                INSERT INTO public.operations (id_user, sum, date) VALUES (:cardNumber, :sum, :date);
                 """;
         jdbcTemplate.update(sql,
                 new MapSqlParameterSource()
-                        .addValue("idUser", idUser)
+                        .addValue("cardNumber", idUser)
                         .addValue("sum", sum)
                         .addValue("date", LocalDateTime.now())
         );
     }
 
-    public void cancelByCardNumber(CancelRqDto cancelRqDto) {
+    public Integer returnByOperationId(ReturnRqDto returnRqDto, int idUser) {
         String sql = """
-                UPDATE public.users SET balance = balance - :sum WHERE users.card_number = :cardNumber AND users.balance >= :sum;
+                UPDATE public.users u SET balance = balance - o.sum FROM public.operations o WHERE u.id = :cardNumber AND o.id = :idOperation RETURNING o.sum;
                 """;
-        jdbcTemplate.update(sql,
+        List<Integer> res = jdbcTemplate.query(sql,
                 new MapSqlParameterSource()
-                        .addValue("sum", cancelRqDto.sum())
-                        .addValue("cardNumber", cancelRqDto.cardNumber())
-        );
-    }
-
-    public BalanceRsDto getBalanceByCardNumber(BalanceRqDto balanceRqDto) {
-        String sql = """
-                SELECT u.balance FROM public.users u WHERE u.card_number = :cardNumber;
-                """;
-        return jdbcTemplate.queryForObject(sql,
-                new MapSqlParameterSource()
-                        .addValue("cardNumber", balanceRqDto.cardNumber()),
-                new DataClassRowMapper<>(BalanceRsDto.class)
-        );
-    }
-
-    public Integer returnByOperationId(ReturnRqDto returnRqDto) {
-        String sql = """
-                UPDATE public.users u SET balance = balance - o.sum FROM public.operations o WHERE u.id = o.id_user AND o.id = :idOperation RETURNING o.sum;
-                """;
-        return jdbcTemplate.queryForObject(sql,
-                new MapSqlParameterSource()
-                        .addValue("idOperation", returnRqDto.idOperation()),
+                        .addValue("idOperation", returnRqDto.idOperation())
+                        .addValue("cardNumber", idUser),
                 (rs, rowNum) -> rs.getInt("sum")
         );
+        return res.isEmpty() ? -1 : res.getFirst();
     }
 
-    public List<HistoryRsDto> getHistoryByCardNumber(HistoryRqDto historyRqDto) {
+    public BalanceRsDto getBalanceByCardNumber(BalanceRqDto balanceRqDto, int idUser) {
         String sql = """
-                SELECT o.sum, o.date FROM public.operations o WHERE o.id_user = :cardNumber;
+                SELECT u.balance FROM public.users u WHERE u.card_number = :cardNumber AND u.id = :idUser;
+                """;
+        List<BalanceRsDto> res = jdbcTemplate.query(sql,
+                new MapSqlParameterSource()
+                        .addValue("cardNumber", balanceRqDto.cardNumber())
+                        .addValue("idUser", idUser),
+                new DataClassRowMapper<>(BalanceRsDto.class)
+        );
+        return res.isEmpty() ? new BalanceRsDto(null) : res.getFirst();
+    }
+
+    public List<HistoryRsDto> getHistoryByCardNumber(HistoryRqDto historyRqDto, int idUser) {
+        String sql = """
+                SELECT o.sum, o.date FROM public.operations o JOIN users u ON u.id = :idUser WHERE u.card_number = :cardNumber;
                 """;
         return jdbcTemplate.query(sql,
                 new MapSqlParameterSource()
-                        .addValue("cardNumber", historyRqDto.idUser()),
+                        .addValue("cardNumber", historyRqDto.cardNumber())
+                        .addValue("idUser", idUser),
                 new DataClassRowMapper<>(HistoryRsDto.class)
         );
     }

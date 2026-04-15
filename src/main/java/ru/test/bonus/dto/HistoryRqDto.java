@@ -1,4 +1,4 @@
 package ru.test.bonus.dto;
 
-public record HistoryRqDto(int idUser) {
+public record HistoryRqDto(String cardNumber) {
 }

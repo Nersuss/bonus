@@ -26,29 +26,38 @@ public class UserService {
     }
 
     @Transactional
-    public void add(AddRqDto addRqDto, int idUser) {
-        userDao.addByCardNumber(addRqDto);
-        userDao.insertOperation(idUser, addRqDto.sum());
+    public boolean add(AddRqDto addRqDto, int idUser) {
+        int res = userDao.addByCardNumber(addRqDto, idUser);
+        if (res == 1) {
+            userDao.insertOperation(idUser, addRqDto.sum());
+        }
+        return res == 1;
     }
 
     @Transactional
-    public void cancel(CancelRqDto cancelRqDto, int idUser) {
-        userDao.cancelByCardNumber(cancelRqDto);
-        userDao.insertOperation(idUser, -cancelRqDto.sum());
-    }
-
-    public BalanceRsDto getBalanceByCardNumber(BalanceRqDto balanceRqDto) {
-        return userDao.getBalanceByCardNumber(balanceRqDto);
+    public boolean cancel(CancelRqDto cancelRqDto, int idUser) {
+        int res = userDao.cancelByCardNumber(cancelRqDto, idUser);
+        if (res == 1) {
+            userDao.insertOperation(idUser, -cancelRqDto.sum());
+        }
+        return res == 1;
     }
 
     @Transactional
-    public void returnByOperationId(ReturnRqDto returnRqDto, int idUser) {
-        Integer sum = userDao.returnByOperationId(returnRqDto);
-        userDao.insertOperation(idUser, -sum);
+    public boolean returnByOperationId(ReturnRqDto returnRqDto, int idUser) {
+        Integer sum = userDao.returnByOperationId(returnRqDto, idUser);
+        if (sum != -1) {
+            userDao.insertOperation(idUser, -sum);
+        }
+        return sum != -1;
     }
 
-    public List<HistoryRsDto> getHistoryByCardNumber(HistoryRqDto historyRqDto) {
-        return userDao.getHistoryByCardNumber(historyRqDto);
+    public BalanceRsDto getBalanceByCardNumber(BalanceRqDto balanceRqDto, int idUser) {
+        return userDao.getBalanceByCardNumber(balanceRqDto, idUser);
+    }
+
+    public List<HistoryRsDto> getHistoryByCardNumber(HistoryRqDto historyRqDto, int idUser) {
+        return userDao.getHistoryByCardNumber(historyRqDto, idUser);
     }
 
 }
