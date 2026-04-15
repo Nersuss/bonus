@@ -66,25 +66,25 @@ public class UserDao {
 
     public int addByCardNumber(AddRqDto addRqDto, int idUser) {
         String sql = """
-                UPDATE public.users SET balance = balance + :sum WHERE users.card_number = :cardNumber AND :sum > 0 AND users.id = :cardNumber;
+                UPDATE public.users SET balance = balance + :sum WHERE users.card_number = :cardNumber AND :sum > 0 AND users.id = :idUser;
                 """;
         return jdbcTemplate.update(sql,
                 new MapSqlParameterSource()
                         .addValue("sum", addRqDto.sum())
                         .addValue("cardNumber", addRqDto.cardNumber())
-                        .addValue("cardNumber", idUser)
+                        .addValue("idUser", idUser)
         );
     }
 
     public int cancelByCardNumber(CancelRqDto cancelRqDto, int idUser) {
         String sql = """
-                UPDATE public.users SET balance = balance - :sum WHERE users.card_number = :cardNumber AND :sum > 0 AND users.balance >= :sum AND users.id = :cardNumber;
+                UPDATE public.users SET balance = balance - :sum WHERE users.card_number = :cardNumber AND :sum > 0 AND users.balance >= :sum AND users.id = :idUser;
                 """;
         return jdbcTemplate.update(sql,
                 new MapSqlParameterSource()
                         .addValue("sum", cancelRqDto.sum())
                         .addValue("cardNumber", cancelRqDto.cardNumber())
-                        .addValue("cardNumber", idUser)
+                        .addValue("idUser", idUser)
         );
     }
 
