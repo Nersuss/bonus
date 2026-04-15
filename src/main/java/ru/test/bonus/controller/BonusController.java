@@ -21,13 +21,13 @@ public class BonusController {
     UserService userService;
 
     @PatchMapping("/add")
-    void add(@RequestBody AddDto addDto, @AuthenticationPrincipal MyUserDetails principal) {
-        userService.add(addDto, principal.getId());
+    void add(@RequestBody AddRqDto addRqDto, @AuthenticationPrincipal MyUserDetails principal) {
+        userService.add(addRqDto, principal.getId());
     }
 
     @PatchMapping("/cancel")
-    void cancel(@RequestBody CancelDto cancelDto, @AuthenticationPrincipal MyUserDetails principal) {
-        userService.cancel(cancelDto, principal.getId());
+    void cancel(@RequestBody CancelRqDto cancelRqDto, @AuthenticationPrincipal MyUserDetails principal) {
+        userService.cancel(cancelRqDto, principal.getId());
     }
 
     @PatchMapping("/return")

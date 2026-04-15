@@ -17,6 +17,7 @@ import ru.test.bonus.service.UserService;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(BonusController.class)
@@ -29,7 +30,7 @@ public class BonusControllerTest {
     private UserService userService;
 
     @MockitoBean
-    private UserDao userRepo;
+    private UserDao userDao;
 
     @MockitoBean
     private MyUserDetailsService myUserDetailsService;
@@ -41,27 +42,33 @@ public class BonusControllerTest {
     }
 
     @Test
+    @WithMockUser
     void cancel() {
     }
 
     @Test
+    @WithMockUser
     void returnPost() {
     }
 
     @Test
     @WithMockUser
     void balance() throws Exception {
-        when(userRepo.getBalanceByCardNumber(new BalanceRqDto("a1")))
+        when(userService.getBalanceByCardNumber(new BalanceRqDto("a1")))
                 .thenReturn(new BalanceRsDto(100));
-
         mockMvc.perform(get("/balance")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"cardNumber\":\"a1\"}"))
-                .andExpect(status().isOk());
-                //.andExpect(jsonPath("$.balance").value(100));
+                        .content("""
+                                {
+                                    "cardNumber": "a1"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.balance").value(100));
     }
 
     @Test
+    @WithMockUser
     void history() {
     }
 }

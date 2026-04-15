@@ -6,6 +6,12 @@ spring:
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.xml
+    enabled: true
+    default-schema: public
+    user: postgres
+    password: postgres
 logging:
   level:
     org:

@@ -52,27 +52,27 @@ public class UserDao {
         ));
     }
 
-    public int registerUser(RegisterDto registerDto) {
+    public int registerUser(RegisterRqDto registerRqDto) {
         String sql = """
                 INSERT INTO public.users (email, password, balance, card_number) VALUES (:email, :password, :balance, :cardNumber);
                 """;
         return jdbcTemplate.update(sql,
                 new MapSqlParameterSource()
-                        .addValue("email", registerDto.login())
-                        .addValue("password", bCryptPasswordEncoder().encode(registerDto.password()))
+                        .addValue("email", registerRqDto.login())
+                        .addValue("password", bCryptPasswordEncoder().encode(registerRqDto.password()))
                         .addValue("balance", 100)
                         .addValue("cardNumber", UUID.randomUUID())
         );
     }
 
-    public void addByCardNumber(AddDto addDto) {
+    public void addByCardNumber(AddRqDto addRqDto) {
         String sql = """
                 UPDATE public.users SET balance = balance + :sum WHERE users.card_number = :cardNumber;
                 """;
         jdbcTemplate.update(sql,
                 new MapSqlParameterSource()
-                        .addValue("sum", addDto.sum())
-                        .addValue("cardNumber", addDto.cardNumber())
+                        .addValue("sum", addRqDto.sum())
+                        .addValue("cardNumber", addRqDto.cardNumber())
         );
     }
 
@@ -88,14 +88,14 @@ public class UserDao {
         );
     }
 
-    public void cancelByCardNumber(CancelDto cancelDto) {
+    public void cancelByCardNumber(CancelRqDto cancelRqDto) {
         String sql = """
                 UPDATE public.users SET balance = balance - :sum WHERE users.card_number = :cardNumber AND users.balance >= :sum;
                 """;
         jdbcTemplate.update(sql,
                 new MapSqlParameterSource()
-                        .addValue("sum", cancelDto.sum())
-                        .addValue("cardNumber", cancelDto.cardNumber())
+                        .addValue("sum", cancelRqDto.sum())
+                        .addValue("cardNumber", cancelRqDto.cardNumber())
         );
     }
 
@@ -130,29 +130,6 @@ public class UserDao {
                         .addValue("cardNumber", historyRqDto.idUser()),
                 new DataClassRowMapper<>(HistoryRsDto.class)
         );
-    }
-
-    public void initDb() {
-        String sql = """
-                CREATE TABLE IF NOT EXISTS public.users (
-                    id SERIAL PRIMARY KEY,
-                    email VARCHAR(255) NOT NULL,
-                    password VARCHAR(255) NOT NULL,
-                    balance INTEGER NOT NULL,
-                    card_number VARCHAR(255) NOT NULL,
-                    CONSTRAINT card_number UNIQUE(card_number),
-                    CONSTRAINT email UNIQUE(email)
-                );
-                
-                CREATE TABLE IF NOT EXISTS public.operations (
-                    id SERIAL PRIMARY KEY,
-                    id_user INTEGER,
-                    sum INTEGER NOT NULL,
-                    date TIMESTAMP NOT NULL,
-                    FOREIGN KEY (id_user) REFERENCES public.users (id)
-                );
-                """;
-        jdbcTemplate.getJdbcOperations().execute(sql);
     }
 
 }

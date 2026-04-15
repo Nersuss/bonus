@@ -17,24 +17,24 @@ public class UserService {
 
     UserDao userDao;
 
-    public void register(RegisterDto registerDto) {
-        if (userDao.existByEmail(registerDto.login())) {
+    public void register(RegisterRqDto registerRqDto) {
+        if (userDao.existByEmail(registerRqDto.login())) {
             System.out.println("User already exist");
             return;
         }
-        userDao.registerUser(registerDto);
+        userDao.registerUser(registerRqDto);
     }
 
     @Transactional
-    public void add(AddDto addDto, int idUser) {
-        userDao.addByCardNumber(addDto);
-        userDao.insertOperation(idUser, addDto.sum());
+    public void add(AddRqDto addRqDto, int idUser) {
+        userDao.addByCardNumber(addRqDto);
+        userDao.insertOperation(idUser, addRqDto.sum());
     }
 
     @Transactional
-    public void cancel(CancelDto cancelDto, int idUser) {
-        userDao.cancelByCardNumber(cancelDto);
-        userDao.insertOperation(idUser, -cancelDto.sum());
+    public void cancel(CancelRqDto cancelRqDto, int idUser) {
+        userDao.cancelByCardNumber(cancelRqDto);
+        userDao.insertOperation(idUser, -cancelRqDto.sum());
     }
 
     public BalanceRsDto getBalanceByCardNumber(BalanceRqDto balanceRqDto) {

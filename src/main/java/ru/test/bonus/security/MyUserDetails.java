@@ -24,19 +24,16 @@ public class MyUserDetails implements UserDetails {
 
     public int getId() {
         return user.id();
-        //return user.getId();
     }
 
     @Override
     public String getPassword() {
         return user.password();
-        //return user.getPassword();
     }
 
     @Override
     public String getUsername() {
         return user.email();
-        //return user.getEmail();
     }
 
     @Override

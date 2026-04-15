@@ -6,7 +6,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import ru.test.bonus.dto.RegisterDto;
+import ru.test.bonus.dto.RegisterRqDto;
 import ru.test.bonus.service.UserService;
 
 @RestController
@@ -17,8 +17,8 @@ public class RegisterController {
     UserService userService;
 
     @PostMapping("/register")
-    void registration(@RequestBody RegisterDto registerDto) {
-        userService.register(registerDto);
+    void registration(@RequestBody RegisterRqDto registerRqDto) {
+        userService.register(registerRqDto);
     }
 
 }
