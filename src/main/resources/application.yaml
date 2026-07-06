@@ -18,3 +18,7 @@ logging:
       springframework:
         jdbc:
           core: DEBUG
+jwt:
+  secret:
+    access: secret-secret-secret-secret-secret-secret-secret
+    refresh: secret-secret-secret-secret-secret-secret-secret

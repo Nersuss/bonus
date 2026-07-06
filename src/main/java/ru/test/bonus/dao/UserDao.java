@@ -64,6 +64,17 @@ public class UserDao {
         );
     }
 
+    public void updateRefreshToken(String login, String refreshToken) {
+        String sql = """
+                UPDATE public.users SET refresh_token =  :refreshToken WHERE users.email = :login;
+                """;
+        jdbcTemplate.update(sql,
+                new MapSqlParameterSource()
+                        .addValue("login", login)
+                        .addValue("refreshToken", refreshToken)
+        );
+    }
+
     public int addByCardNumber(AddRqDto addRqDto, int idUser) {
         String sql = """
                 UPDATE public.users SET balance = balance + :sum WHERE users.card_number = :cardNumber AND :sum > 0 AND users.id = :idUser;
